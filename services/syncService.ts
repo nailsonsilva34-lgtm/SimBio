@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { Student, Teacher, Activity, Bimester, ClassContent, ForumPost, NotificationType, ClassActivityConfig, ClassSettings, ForumSettings, SchoolClass } from '../types';
+import { Student, Teacher, Activity, Bimester, ClassContent, ForumPost, NotificationType, ClassActivityConfig, ClassSettings, ForumSettings, SchoolClass, UserRole } from '../types';
 
 export const syncService = {
     syncStudents: async (students: Student[]) => {
@@ -108,8 +108,8 @@ export const syncService = {
             if (studentsData && studentsData.length > 0) {
                 const localStudents: Student[] = studentsData.map(row => ({
                     id: row.id,
-                    name: row.profiles.name,
-                    email: row.profiles.email,
+                    name: row.profiles?.name || 'Sem Nome',
+                    email: row.profiles?.email || '',
                     password: '',
                     schoolClass: row.school_class,
                     birthDate: row.birth_date,
@@ -132,20 +132,75 @@ export const syncService = {
                         const student = localStudents.find(s => s.id === grade.student_id);
                         if (student && student.bimesterGrades[grade.bimester]) {
                             // Try to parse the ID from the concatenated string, or assign sequentially
-                            const activityId = parseInt(grade.id.split('-').pop()) || 1;
-                            student.bimesterGrades[grade.bimester].push({
-                                id: activityId as any,
-                                title: grade.title,
+                            student.bimesterGrades[grade.bimester as Bimester].push({
+                                id: grade.activity_id as any,
+                                title: grade.title || '',
+                                description: grade.description || '',
                                 score: grade.score,
                                 recoveryScore: grade.recovery_score,
-                                maxScore: 10,
-                                hasRecovery: false
+                                maxScore: grade.max_score || 10,
+                                hasRecovery: grade.has_recovery || false
                             });
                         }
                     }
                 }
 
-                localStorage.setItem('biograde_students_2026', JSON.stringify(localStudents));
+                const STUDENTS_KEY = 'biograde_students_2026_v2';
+                localStorage.setItem(STUDENTS_KEY, JSON.stringify(localStudents));
+            }
+
+            // Sync other tables
+            const { data: contentData } = await supabase.from('planning_content').select('*');
+            if (contentData) {
+                const CONTENT_KEY = 'biograde_content_2026_v2';
+                const localContent = contentData.map(c => ({
+                    schoolClass: c.school_class,
+                    bimester: c.bimester,
+                    week: c.week,
+                    title: c.title,
+                    description: c.description,
+                    textContent: c.description, // Mapping description to textContent if needed
+                    files: [],
+                    reminders: []
+                }));
+                localStorage.setItem(CONTENT_KEY, JSON.stringify(localContent));
+            }
+
+            const { data: configData } = await supabase.from('activity_configs').select('*');
+            if (configData) {
+                const ACTIVITY_CONFIGS_KEY = 'biograde_activity_configs_2026';
+                const configs: Record<string, any> = {};
+                configData.forEach(c => {
+                    const key = `${c.school_class}_${c.bimester}`;
+                    if (!configs[key]) configs[key] = [];
+                    configs[key].push({
+                        id: c.activity_id,
+                        title: c.title,
+                        description: c.description,
+                        maxScore: c.max_score,
+                        hasRecovery: c.has_recovery
+                    });
+                });
+                localStorage.setItem(ACTIVITY_CONFIGS_KEY, JSON.stringify(configs));
+            }
+
+            const { data: forumData } = await supabase.from('forum_messages').select('*, profiles(name, role)');
+            if (forumData) {
+                const FORUM_POSTS_KEY = 'biograde_forum_posts_2026';
+                const posts = forumData.map(f => {
+                    const profile = Array.isArray(f.profiles) ? f.profiles[0] : f.profiles;
+                    return {
+                        id: f.id,
+                        authorId: f.user_id,
+                        authorName: profile?.name || 'Sistema',
+                        authorRole: (profile?.role === 'teacher' ? UserRole.TEACHER : UserRole.STUDENT),
+                        content: f.message,
+                        timestamp: f.created_at,
+                        bimester: f.bimester,
+                        schoolClass: f.school_class
+                    };
+                });
+                localStorage.setItem(FORUM_POSTS_KEY, JSON.stringify(posts));
             }
 
             return true;
