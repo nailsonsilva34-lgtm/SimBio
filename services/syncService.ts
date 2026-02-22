@@ -29,12 +29,16 @@ export const syncService = {
                     await supabase
                         .from('bimester_grades')
                         .upsert({
-                            id: student.id + '-' + bimester + '-' + grade.id,
                             student_id: student.id,
                             bimester: bimester,
+                            activity_id: grade.id,
                             title: grade.title,
                             score: grade.score,
+                            max_score: grade.maxScore,
+                            has_recovery: grade.hasRecovery,
                             recovery_score: grade.recoveryScore
+                        }, {
+                            onConflict: 'student_id,bimester,activity_id'
                         });
                 }
             }
@@ -43,23 +47,23 @@ export const syncService = {
 
     syncClassContent: async (content: ClassContent) => {
         await supabase.from('planning_content').upsert({
-            id: `CONTENT_${content.schoolClass}_${content.bimester}`,
-            class_level: content.schoolClass,
+            school_class: content.schoolClass,
             bimester: content.bimester,
             title: 'Planejamento',
             description: content.textContent,
-            updated_by_name: content.lastEditedBy || 'Professor'
+        }, {
+            onConflict: 'school_class,bimester'
         });
     },
 
     syncForumPost: async (post: ForumPost) => {
         await supabase.from('forum_messages').upsert({
             id: post.id,
-            text: post.content,
-            author_id: post.authorId,
-            author_name: post.authorName,
-            author_type: post.authorRole === 'TEACHER' ? 'teacher' : 'student',
-            date: post.timestamp
+            message: post.content,
+            user_id: post.authorId,
+            bimester: post.bimester,
+            school_class: post.schoolClass,
+            created_at: post.timestamp
         });
     },
 
@@ -106,32 +110,34 @@ export const syncService = {
           `);
 
             if (studentsData && studentsData.length > 0) {
-                const localStudents: Student[] = studentsData.map(row => ({
-                    id: row.id,
-                    name: row.profiles?.name || 'Sem Nome',
-                    email: row.profiles?.email || '',
-                    password: '',
-                    schoolClass: row.school_class,
-                    birthDate: row.birth_date,
-                    biologicalSex: row.biological_sex,
-                    residenceType: row.residence_type,
-                    isMonitor: row.is_monitor,
-                    avatarUrl: row.avatar_url,
-                    biologicalLevel: 'ATOM',
-                    bimesterGrades: {
-                        '1º Bimestre': [],
-                        '2º Bimestre': [],
-                        '3º Bimestre': [],
-                        '4º Bimestre': []
-                    }
-                }));
+                const localStudents: Student[] = studentsData.map(row => {
+                    const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+                    return {
+                        id: row.id,
+                        name: profile?.name || 'Sem Nome',
+                        email: profile?.email || '',
+                        password: '',
+                        schoolClass: row.school_class,
+                        birthDate: row.birth_date,
+                        biologicalSex: row.biological_sex,
+                        residenceType: row.residence_type,
+                        isMonitor: row.is_monitor,
+                        avatarUrl: row.avatar_url,
+                        biologicalLevel: row.biological_level || 'ATOM',
+                        bimesterGrades: {
+                            '1º Bimestre': [],
+                            '2º Bimestre': [],
+                            '3º Bimestre': [],
+                            '4º Bimestre': []
+                        }
+                    };
+                });
 
                 const { data: gradesData } = await supabase.from('bimester_grades').select('*');
                 if (gradesData) {
                     for (const grade of gradesData) {
                         const student = localStudents.find(s => s.id === grade.student_id);
-                        if (student && student.bimesterGrades[grade.bimester]) {
-                            // Try to parse the ID from the concatenated string, or assign sequentially
+                        if (student && student.bimesterGrades && student.bimesterGrades[grade.bimester as Bimester]) {
                             student.bimesterGrades[grade.bimester as Bimester].push({
                                 id: grade.activity_id as any,
                                 title: grade.title || '',
