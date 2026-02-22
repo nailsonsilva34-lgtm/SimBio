@@ -264,11 +264,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ student: ini
                                             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{a.description || 'Atividade acadêmica'}</span>
                                         </div>
                                         <div className="flex flex-col items-end">
-                                            <div className={`text-3xl font-black ${a.score !== null && a.score < 6 ? 'text-red-500' : 'text-emerald-600'}`}>{a.score ?? '-'}</div>
-                                            {a.recoveryScore !== null && (
+                                            <div className={`text-3xl font-black ${a?.score !== null && a?.score < 6 ? 'text-red-500' : 'text-emerald-600'}`}>{a?.score ?? '-'}</div>
+                                            {a?.recoveryScore !== null && (
                                                 <div className="flex items-center gap-1 mt-1 bg-white px-2 py-1 rounded-lg shadow-sm border border-slate-100">
                                                     <span className="text-[8px] font-black uppercase text-slate-400">Recuperação</span>
-                                                    <span className={`text-xs font-black ${a.recoveryScore < 6 ? 'text-red-500' : 'text-emerald-600'}`}>{a.recoveryScore}</span>
+                                                    <span className={`text-xs font-black ${a?.recoveryScore < 6 ? 'text-red-500' : 'text-emerald-600'}`}>{a?.recoveryScore}</span>
                                                 </div>
                                             )}
                                         </div>

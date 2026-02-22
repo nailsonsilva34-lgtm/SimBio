@@ -19,7 +19,7 @@ export const GradeBulletin: React.FC<GradeBulletinProps> = ({
     const bimesters: Bimester[] = ['1º Bimestre', '2º Bimestre', '3º Bimestre', '4º Bimestre'];
 
     const calculateAverage = (grades: Activity[]) => {
-        const validGrades = grades.filter(g => g.score !== null);
+        const validGrades = (grades || []).filter(g => g && g.score !== null);
         if (validGrades.length < 3) return '-';
 
         const sum = validGrades.reduce((acc, curr) => {
@@ -107,12 +107,12 @@ export const GradeBulletin: React.FC<GradeBulletinProps> = ({
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 italic font-medium text-slate-700">
                                     {grades.map(g => (
-                                        <tr key={g.id}>
-                                            <td className="p-4 pl-6 text-xs font-bold text-slate-800">{g.title}</td>
-                                            <td className="p-4 text-center text-xs">{g.score ?? '-'}</td>
-                                            <td className="p-4 text-center text-xs">{g.recoveryScore ?? '-'}</td>
+                                        <tr key={g?.id}>
+                                            <td className="p-4 pl-6 text-xs font-bold text-slate-800">{g?.title}</td>
+                                            <td className="p-4 text-center text-xs">{g?.score ?? '-'}</td>
+                                            <td className="p-4 text-center text-xs">{g?.recoveryScore ?? '-'}</td>
                                             <td className="p-4 pr-6 text-right text-xs font-black">
-                                                {Math.max(g.score || 0, g.recoveryScore || 0) || '-'}
+                                                {Math.max(g?.score || 0, g?.recoveryScore || 0) || '-'}
                                             </td>
                                         </tr>
                                     ))}

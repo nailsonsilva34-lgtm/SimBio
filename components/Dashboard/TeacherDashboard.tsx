@@ -636,7 +636,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                                                     {[0, 1, 2].map(i => {
                                                         const activity = s.bimesterGrades[activeBimester][i];
                                                         const pendingVal = pendingGrades[s.id]?.[i];
-                                                        const displayVal = pendingVal !== undefined ? pendingVal : (activity.score ?? '');
+                                                        const displayVal = pendingVal !== undefined ? pendingVal : (activity?.score ?? '');
 
                                                         // Color Logic
                                                         const getScoreColor = (val: number | null) => {
@@ -651,7 +651,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                                                                         <input
                                                                             type="number"
                                                                             min="0"
-                                                                            max={activity.maxScore || 10}
+                                                                            max={activity?.maxScore || 10}
                                                                             step="0.1"
                                                                             value={displayVal}
                                                                             onChange={(e) => handleBatchGradeChange(s.id, i, e.target.value)}
@@ -659,18 +659,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                                                                             placeholder="-"
                                                                         />
                                                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover/input:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                                                            Max: {activity.maxScore || 10}
+                                                                            Max: {activity?.maxScore || 10}
                                                                         </div>
                                                                     </div>
                                                                 ) : (
                                                                     <div className="flex justify-center">
-                                                                        <button disabled={!currentPerms.canEditGrades} onClick={() => setEditingGrade({ student: s, activity: s.bimesterGrades[activeBimester][i] })} className={`w-14 py-1.5 border rounded-lg font-black text-xs relative group/btn flex flex-col items-center justify-center gap-0.5 ${!currentPerms.canEditGrades ? 'opacity-50 cursor-not-allowed' : ''} ${s.bimesterGrades[activeBimester][i].score !== null ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-100'}`}>
-                                                                            <span className={getScoreColor(s.bimesterGrades[activeBimester][i].score)}>
-                                                                                {s.bimesterGrades[activeBimester][i].score ?? '-'}
+                                                                        <button disabled={!currentPerms.canEditGrades} onClick={() => setEditingGrade({ student: s, activity: s.bimesterGrades[activeBimester][i] })} className={`w-14 py-1.5 border rounded-lg font-black text-xs relative group/btn flex flex-col items-center justify-center gap-0.5 ${!currentPerms.canEditGrades ? 'opacity-50 cursor-not-allowed' : ''} ${s.bimesterGrades[activeBimester][i]?.score !== null ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-100'}`}>
+                                                                            <span className={getScoreColor(s.bimesterGrades[activeBimester][i]?.score)}>
+                                                                                {s.bimesterGrades[activeBimester][i]?.score ?? '-'}
                                                                             </span>
-                                                                            {s.bimesterGrades[activeBimester][i].recoveryScore !== null && (
-                                                                                <span className={`text-[8px] ${getScoreColor(s.bimesterGrades[activeBimester][i].recoveryScore)}`}>
-                                                                                    Rec: {s.bimesterGrades[activeBimester][i].recoveryScore}
+                                                                            {s.bimesterGrades[activeBimester][i]?.recoveryScore !== null && (
+                                                                                <span className={`text-[8px] ${getScoreColor(s.bimesterGrades[activeBimester][i]?.recoveryScore)}`}>
+                                                                                    Rec: {s.bimesterGrades[activeBimester][i]?.recoveryScore}
                                                                                 </span>
                                                                             )}
                                                                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
@@ -765,7 +765,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                                                 {[0, 1, 2].map(i => {
                                                     const activity = s.bimesterGrades[activeBimester][i];
                                                     const pendingVal = pendingGrades[s.id]?.[i];
-                                                    const displayVal = pendingVal !== undefined ? pendingVal : (activity.score ?? '');
+                                                    const displayVal = pendingVal !== undefined ? pendingVal : (activity?.score ?? '');
 
                                                     const getScoreColor = (val: number | null) => {
                                                         if (val === null) return 'text-slate-300';
@@ -787,13 +787,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                                                                     placeholder="-"
                                                                 />
                                                             ) : (
-                                                                <button disabled={!currentPerms.canEditGrades} onClick={() => setEditingGrade({ student: s, activity: s.bimesterGrades[activeBimester][i] })} className={`w-full py-2 border rounded-xl font-black text-sm flex flex-col items-center justify-center gap-0.5 ${!currentPerms.canEditGrades ? 'opacity-50 cursor-not-allowed' : ''} ${s.bimesterGrades[activeBimester][i].score !== null ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-100'}`}>
-                                                                    <span className={getScoreColor(s.bimesterGrades[activeBimester][i].score)}>
-                                                                        {s.bimesterGrades[activeBimester][i].score ?? '-'}
+                                                                <button disabled={!currentPerms.canEditGrades} onClick={() => setEditingGrade({ student: s, activity: s.bimesterGrades[activeBimester][i] })} className={`w-full py-2 border rounded-xl font-black text-sm flex flex-col items-center justify-center gap-0.5 ${!currentPerms.canEditGrades ? 'opacity-50 cursor-not-allowed' : ''} ${s.bimesterGrades[activeBimester][i]?.score !== null ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-100'}`}>
+                                                                    <span className={getScoreColor(s.bimesterGrades[activeBimester][i]?.score)}>
+                                                                        {s.bimesterGrades[activeBimester][i]?.score ?? '-'}
                                                                     </span>
-                                                                    {s.bimesterGrades[activeBimester][i].recoveryScore !== null && (
-                                                                        <span className={`text-[8px] ${getScoreColor(s.bimesterGrades[activeBimester][i].recoveryScore)}`}>
-                                                                            R: {s.bimesterGrades[activeBimester][i].recoveryScore}
+                                                                    {s.bimesterGrades[activeBimester][i]?.recoveryScore !== null && (
+                                                                        <span className={`text-[8px] ${getScoreColor(s.bimesterGrades[activeBimester][i]?.recoveryScore)}`}>
+                                                                            R: {s.bimesterGrades[activeBimester][i]?.recoveryScore}
                                                                         </span>
                                                                     )}
                                                                 </button>

@@ -126,10 +126,26 @@ export const syncService = {
                         avatarUrl: row.avatar_url,
                         biologicalLevel: row.biological_level || 'ATOM',
                         bimesterGrades: {
-                            '1º Bimestre': [],
-                            '2º Bimestre': [],
-                            '3º Bimestre': [],
-                            '4º Bimestre': []
+                            '1º Bimestre': [
+                                { id: 1, title: 'Atividade 1', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                                { id: 2, title: 'Atividade 2', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                                { id: 3, title: 'Atividade 3', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                            ],
+                            '2º Bimestre': [
+                                { id: 1, title: 'Atividade 1', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                                { id: 2, title: 'Atividade 2', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                                { id: 3, title: 'Atividade 3', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                            ],
+                            '3º Bimestre': [
+                                { id: 1, title: 'Atividade 1', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                                { id: 2, title: 'Atividade 2', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                                { id: 3, title: 'Atividade 3', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                            ],
+                            '4º Bimestre': [
+                                { id: 1, title: 'Atividade 1', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                                { id: 2, title: 'Atividade 2', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                                { id: 3, title: 'Atividade 3', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
+                            ]
                         }
                     };
                 });
@@ -139,15 +155,19 @@ export const syncService = {
                     for (const grade of gradesData) {
                         const student = localStudents.find(s => s.id === grade.student_id);
                         if (student && student.bimesterGrades && student.bimesterGrades[grade.bimester as Bimester]) {
-                            student.bimesterGrades[grade.bimester as Bimester].push({
-                                id: grade.activity_id as any,
-                                title: grade.title || '',
-                                description: grade.description || '',
-                                score: grade.score,
-                                recoveryScore: grade.recovery_score,
-                                maxScore: grade.max_score || 10,
-                                hasRecovery: grade.has_recovery || false
-                            });
+                            const bimGrades = student.bimesterGrades[grade.bimester as Bimester];
+                            const activityIndex = (grade.activity_id as number) - 1;
+                            if (bimGrades[activityIndex]) {
+                                bimGrades[activityIndex] = {
+                                    id: grade.activity_id as any,
+                                    title: grade.title || bimGrades[activityIndex].title,
+                                    description: grade.description || '',
+                                    score: grade.score,
+                                    recoveryScore: grade.recovery_score,
+                                    maxScore: grade.max_score || 10,
+                                    hasRecovery: grade.has_recovery || false
+                                };
+                            }
                         }
                     }
                 }
