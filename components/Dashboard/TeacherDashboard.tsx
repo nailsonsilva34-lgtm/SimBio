@@ -10,7 +10,7 @@ import { StatisticsView } from './StatisticsView';
 import { BiologicalLevelIcon, getAvatarStyles, getInitials, getClassColor, getRankColor } from '../UI/AvatarUtils';
 import { BIOLOGICAL_LEVELS, BIOLOGICAL_LEVEL_ORDER } from '../../types';
 import { GradeBulletin, ClassAveragesExport } from '../UI/GradeBulletin';
-import { BatchImport } from './BatchImport';
+import { GradeBulletin, ClassAveragesExport } from '../UI/GradeBulletin';
 import { Printer } from 'lucide-react';
 
 interface TeacherDashboardProps {
@@ -30,7 +30,6 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
     const [editingGrade, setEditingGrade] = useState<{ student: Student, activity: Activity } | null>(null);
     const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
     const [isNewStudentOpen, setIsNewStudentOpen] = useState(false);
-    const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
     const [currentClassContent, setCurrentClassContent] = useState<ClassContent | null>(null);
     const [monitorPerms, setMonitorPerms] = useState<MonitorPermissions>(getMonitorPermissions());
 
@@ -550,12 +549,6 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                                                     className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-800 text-white hover:bg-slate-700 transition-all flex items-center justify-center gap-2 shadow-lg"
                                                 >
                                                     <ListChecks size={16} /> Lançar Notas em Lote
-                                                </button>
-                                                <button
-                                                    onClick={() => setIsBatchImportOpen(true)}
-                                                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
-                                                >
-                                                    <Upload size={16} /> Importar Turma
                                                 </button>
                                             </>
                                         )}
@@ -1456,15 +1449,6 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                 )
             }
 
-            {isBatchImportOpen && (
-                <BatchImport
-                    onClose={() => setIsBatchImportOpen(false)}
-                    onSuccess={() => {
-                        refreshData();
-                        setIsBatchImportOpen(false);
-                    }}
-                />
-            )}
 
             {/* Impressão - Boletim Individual */}
             {viewingStudent && <GradeBulletin student={viewingStudent} teacher={user as any} activeBimester={activeBimester} />}

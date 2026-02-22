@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { Student, Teacher, Activity, Bimester, ClassContent, ForumPost, NotificationType } from '../types';
+import { Student, Teacher, Activity, Bimester, ClassContent, ForumPost, NotificationType, ClassActivityConfig, ClassSettings, ForumSettings, SchoolClass } from '../types';
 
 export const syncService = {
     syncStudents: async (students: Student[]) => {
@@ -65,6 +65,36 @@ export const syncService = {
 
     syncDeleteForumPost: async (postId: string) => {
         await supabase.from('forum_messages').delete().eq('id', postId);
+    },
+
+    syncActivityConfigs: async (schoolClass: SchoolClass, bimester: Bimester, configs: ClassActivityConfig[]) => {
+        for (const config of configs) {
+            await supabase.from('activity_configs').upsert({
+                school_class: schoolClass,
+                bimester: bimester,
+                activity_id: config.id,
+                title: config.title,
+                description: config.description,
+                max_score: config.maxScore,
+                has_recovery: config.hasRecovery
+            });
+        }
+    },
+
+    syncClassSettings: async (schoolClass: SchoolClass, bimester: Bimester, settings: ClassSettings) => {
+        await supabase.from('class_settings').upsert({
+            school_class: schoolClass,
+            bimester: bimester,
+            show_average: settings.showAverage
+        });
+    },
+
+    syncForumSettings: async (schoolClass: SchoolClass, bimester: Bimester, settings: ForumSettings) => {
+        await supabase.from('forum_settings').upsert({
+            school_class: schoolClass,
+            bimester: bimester,
+            is_enabled: settings.isEnabled
+        });
     },
 
     // Busca inicial dos dados do App Load

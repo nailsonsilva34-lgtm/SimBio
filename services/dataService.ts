@@ -53,6 +53,7 @@ export const getMonitorPermissions = (): MonitorPermissions => {
 
 export const saveMonitorPermissions = (perms: MonitorPermissions) => {
   localStorage.setItem(MONITOR_PERMS_KEY, JSON.stringify(perms));
+  // Note: Add Supabase sync for perms if needed
 };
 
 export const getNotifications = (): Notification[] => {
@@ -192,6 +193,9 @@ export const saveClassActivityConfigs = (schoolClass: SchoolClass, bimester: Bim
   if (updated) {
     saveStudents(updatedStudents);
   }
+
+  // Sync activity configs to Supabase
+  syncService.syncActivityConfigs?.(schoolClass, bimester, configs).catch(console.error);
 };
 
 export const getClassSettings = (schoolClass: SchoolClass, bimester: Bimester): ClassSettings => {
@@ -213,6 +217,9 @@ export const saveClassSettings = (schoolClass: SchoolClass, bimester: Bimester, 
 
   allSettings[key] = settings;
   localStorage.setItem(CLASS_SETTINGS_KEY, JSON.stringify(allSettings));
+
+  // Sync class settings to Supabase
+  syncService.syncClassSettings?.(schoolClass, bimester, settings).catch(console.error);
 };
 
 export const getClassContent = (schoolClass: SchoolClass, bimester: Bimester): ClassContent => {
@@ -259,6 +266,7 @@ export const saveClassContent = (content: ClassContent) => {
   if (index >= 0) allContent[index] = content;
   else allContent.push(content);
   localStorage.setItem(CONTENT_KEY, JSON.stringify(allContent));
+  syncService.syncClassContent(content).catch(console.error);
 };
 
 export const updateActivityGrade = (studentId: string, bimester: Bimester, activity: Activity) => {
@@ -453,6 +461,7 @@ export const saveForumPost = (post: ForumPost) => {
   const allPosts: ForumPost[] = data ? JSON.parse(data) : [];
   allPosts.push(post);
   localStorage.setItem(FORUM_POSTS_KEY, JSON.stringify(allPosts));
+  syncService.syncForumPost(post).catch(console.error);
 };
 
 export const deleteForumPost = (postId: string) => {
@@ -469,6 +478,7 @@ export const deleteForumPost = (postId: string) => {
 
     if (updated.length !== initialCount) {
       localStorage.setItem(FORUM_POSTS_KEY, JSON.stringify(updated));
+      syncService.syncDeleteForumPost(postId).catch(console.error);
     }
   } catch (error) {
     console.error("[DataService] Error deleting forum post:", error);
@@ -488,6 +498,7 @@ export const saveForumSettings = (schoolClass: SchoolClass, bimester: Bimester, 
   const key = `${schoolClass}_${bimester}`;
   allSettings[key] = settings;
   localStorage.setItem(FORUM_SETTINGS_KEY, JSON.stringify(allSettings));
+  syncService.syncForumSettings?.(schoolClass, bimester, settings).catch(console.error);
 };
 
 // Rank Helpers
