@@ -104,7 +104,8 @@ export const syncService = {
     // Busca inicial dos dados do App Load
     pullInitialData: async () => {
         try {
-            const { data: studentsData } = await supabase.from('students').select(`
+            console.log('Supabase Sync starting...');
+            const { data: studentsData, error: sErr } = await supabase.from('students').select(`
               *,
               profiles (name, email)
           `);
@@ -153,6 +154,7 @@ export const syncService = {
 
                 const STUDENTS_KEY = 'biograde_students_2026_v2';
                 localStorage.setItem(STUDENTS_KEY, JSON.stringify(localStudents));
+                console.log('Students synced');
             }
 
             // Sync other tables
@@ -209,10 +211,11 @@ export const syncService = {
                 localStorage.setItem(FORUM_POSTS_KEY, JSON.stringify(posts));
             }
 
+            console.log('Supabase Sync complete!');
             return true;
         } catch (e) {
-            console.error('Error fetching Supabase Sync:', e);
-            return false;
+            console.error('CRITICAL: Error fetching Supabase Sync:', e);
+            throw e; // Rethrow to let App.tsx handle it with screen error
         }
     }
 };
