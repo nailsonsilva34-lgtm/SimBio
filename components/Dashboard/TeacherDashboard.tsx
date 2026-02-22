@@ -10,7 +10,6 @@ import { StatisticsView } from './StatisticsView';
 import { BiologicalLevelIcon, getAvatarStyles, getInitials, getClassColor, getRankColor } from '../UI/AvatarUtils';
 import { BIOLOGICAL_LEVELS, BIOLOGICAL_LEVEL_ORDER } from '../../types';
 import { GradeBulletin, ClassAveragesExport } from '../UI/GradeBulletin';
-import { GradeBulletin, ClassAveragesExport } from '../UI/GradeBulletin';
 import { Printer } from 'lucide-react';
 
 interface TeacherDashboardProps {
