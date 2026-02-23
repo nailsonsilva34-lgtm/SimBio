@@ -380,6 +380,15 @@ export const updateStudent = (id: string, updates: any) => {
   saveStudents(students);
   const updatedStudent = students[index];
 
+  // Sync with Supabase Auth if sensitive data changed
+  if (updates.password || updates.name || updates.email) {
+    authService.updateUserAuth(id, {
+      password: updates.password,
+      name: updates.name,
+      email: updates.email
+    }).catch(console.error);
+  }
+
   // Sync with auth session if needed
   const currentUser = authService.getCurrentUser();
   if (currentUser && currentUser.id === id && currentUser.role === UserRole.STUDENT) {

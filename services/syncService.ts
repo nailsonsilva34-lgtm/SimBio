@@ -16,7 +16,8 @@ export const syncService = {
                     biological_sex: student.biologicalSex,
                     residence_type: student.residenceType,
                     is_monitor: student.isMonitor,
-                    avatar_url: student.avatarUrl
+                    avatar_url: student.avatarUrl,
+                    biological_level: student.biologicalLevel || 'ORGANELLE'
                 });
 
             if (studentError) {
@@ -51,6 +52,8 @@ export const syncService = {
             bimester: content.bimester,
             title: 'Planejamento',
             description: content.textContent,
+            reminders: content.reminders || [],
+            files: content.files || []
         }, {
             onConflict: 'school_class,bimester'
         });
@@ -124,7 +127,7 @@ export const syncService = {
                         residenceType: row.residence_type,
                         isMonitor: row.is_monitor,
                         avatarUrl: row.avatar_url,
-                        biologicalLevel: row.biological_level || 'ATOM',
+                        biologicalLevel: row.biological_level || 'ORGANELLE',
                         bimesterGrades: {
                             '1º Bimestre': [
                                 { id: 1, title: 'Atividade 1', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },
@@ -187,9 +190,9 @@ export const syncService = {
                     week: c.week,
                     title: c.title,
                     description: c.description,
-                    textContent: c.description, // Mapping description to textContent if needed
-                    files: [],
-                    reminders: []
+                    textContent: c.description,
+                    files: c.files || [],
+                    reminders: c.reminders || []
                 }));
                 localStorage.setItem(CONTENT_KEY, JSON.stringify(localContent));
             }

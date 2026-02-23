@@ -162,7 +162,11 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </div>
             )}
             {showRegisterLink && (
-              <button type="button" onClick={() => setIsRegistering(true)} className="w-full text-xs font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600">Não tem conta? Cadastre-se</button>
+              <button type="button" onClick={() => {
+                setIsRegistering(true);
+                // Force role to student if teacher already exists but student wants to register
+                if (hasTeacher) setRole(UserRole.STUDENT);
+              }} className="w-full text-xs font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600">Não tem conta? Cadastre-se</button>
             )}
           </form>
         )}
