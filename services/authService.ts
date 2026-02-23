@@ -213,15 +213,11 @@ export const authService = {
   },
 
   checkTeacherExists: async (): Promise<boolean> => {
-    const { count, error } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'teacher');
-
+    const { data, error } = await supabase.rpc('check_teacher_exists');
     if (error) {
-      console.error('Error checking for teachers:', error);
+      console.error('Error checking for teachers via RPC:', error);
       return false;
     }
-    return (count && count > 0) ? true : false;
+    return !!data;
   }
 };
