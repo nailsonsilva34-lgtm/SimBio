@@ -17,7 +17,9 @@ export const syncService = {
                     residence_type: student.residenceType,
                     is_monitor: student.isMonitor,
                     avatar_url: student.avatarUrl,
-                    biological_level: student.biologicalLevel || 'ORGANELLE'
+                    biological_level: student.biologicalLevel || 'ORGANELLE',
+                    personal_reminders: student.personalReminders || [],
+                    personal_materials: student.personalMaterials || []
                 });
 
             if (studentError) {
@@ -128,6 +130,8 @@ export const syncService = {
                         isMonitor: row.is_monitor,
                         avatarUrl: row.avatar_url,
                         biologicalLevel: row.biological_level || 'ORGANELLE',
+                        personalReminders: row.personal_reminders || [],
+                        personalMaterials: row.personal_materials || [],
                         bimesterGrades: {
                             '1º Bimestre': [
                                 { id: 1, title: 'Atividade 1', score: null, maxScore: 10, hasRecovery: false, recoveryScore: null },

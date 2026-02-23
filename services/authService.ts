@@ -182,22 +182,18 @@ export const authService = {
     localStorage.removeItem(AUTH_USER_KEY);
   },
 
-  // Updates user profile in Auth (name, password, email) using Admin Client
+  // Updates user profile in Auth (name, password, email) using Edge Function
   // This is required when a teacher updates a student's data
   updateUserAuth: async (id: string, updates: { password?: string; name?: string; email?: string }): Promise<void> => {
-    const authUpdates: any = {};
-    if (updates.password) authUpdates.password = updates.password;
-    if (updates.email) authUpdates.email = updates.email;
-    if (updates.name) {
-      if (!authUpdates.data) authUpdates.data = {};
-      authUpdates.data.name = updates.name;
-    }
+    if (Object.keys(updates).length === 0) return;
 
-    if (Object.keys(authUpdates).length === 0) return;
+    // Call the deployed edge function to bypass RLS securely
+    const { data, error } = await supabase.functions.invoke('admin-update-user', {
+      body: { targetUserId: id, updates }
+    });
 
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(id, authUpdates);
     if (error) {
-      console.error('Error updating user auth via admin:', error);
+      console.error('Error updating user auth via edge function:', error);
       throw new Error(`Erro ao atualizar credenciais: ${error.message}`);
     }
 
