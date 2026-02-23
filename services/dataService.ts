@@ -86,6 +86,7 @@ export const addNotification = (
   };
   notifications.unshift(newNotif);
   localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications.slice(0, 50)));
+  syncService.syncNotification(newNotif).catch(console.error);
 };
 
 export const markNotificationAsRead = (studentId: string, notificationId: string) => {
@@ -94,27 +95,34 @@ export const markNotificationAsRead = (studentId: string, notificationId: string
   if (index !== -1 && !notifications[index].readBy.includes(studentId)) {
     notifications[index].readBy.push(studentId);
     localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+    syncService.markNotificationAsRead(notificationId, studentId).catch(console.error);
   }
 };
 
 export const removeNotificationByRef = (refId: string) => {
   const notifications = getNotifications();
   const filtered = notifications.filter(n => n.refId !== refId);
-  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(filtered));
+  if (filtered.length !== notifications.length) {
+    localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(filtered));
+    syncService.syncRemoveNotificationByRef(refId).catch(console.error);
+  }
 };
 
 export const markAllNotificationsAsRead = (studentId: string) => {
   const notifications = getNotifications();
   let changed = false;
+  const unreadIds: string[] = [];
   notifications.forEach(n => {
     // Nota: targetId pode ser o ID do estudante ou o ID da turma
     if (!n.readBy.includes(studentId)) {
       n.readBy.push(studentId);
+      unreadIds.push(n.id);
       changed = true;
     }
   });
   if (changed) {
     localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+    syncService.markAllNotificationsAsRead(studentId, unreadIds).catch(console.error);
   }
 };
 

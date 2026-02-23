@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { Student, Teacher, Activity, Bimester, ClassContent, ForumPost, NotificationType, ClassActivityConfig, ClassSettings, ForumSettings, SchoolClass, UserRole } from '../types';
+import { Student, Teacher, Activity, Bimester, ClassContent, ForumPost, NotificationType, ClassActivityConfig, ClassSettings, ForumSettings, SchoolClass, UserRole, Notification } from '../types';
 
 export const syncService = {
     syncStudents: async (students: Student[]) => {
@@ -50,14 +50,14 @@ export const syncService = {
 
     syncClassContent: async (content: ClassContent) => {
         await supabase.from('planning_content').upsert({
-            school_class: content.schoolClass,
+            class_level: content.schoolClass,
             bimester: content.bimester,
             title: 'Planejamento',
             description: content.textContent,
             reminders: content.reminders || [],
             files: content.files || []
         }, {
-            onConflict: 'school_class,bimester'
+            onConflict: 'class_level,bimester'
         });
     },
 
@@ -104,6 +104,42 @@ export const syncService = {
             bimester: bimester,
             is_enabled: settings.isEnabled
         });
+    },
+
+    syncNotification: async (notif: Notification) => {
+        await supabase.from('notifications').upsert({
+            id: notif.id,
+            type: notif.type,
+            target_type: notif.targetType,
+            target_id: notif.targetId,
+            message: notif.message,
+            target_section: notif.targetSection,
+            ref_id: notif.refId,
+            created_at: notif.createdAt,
+            // Assuming we manage an array of reader IDs directly
+            read_by: notif.readBy || []
+        });
+    },
+
+    markNotificationAsRead: async (notificationId: string, studentId: string) => {
+        // Fetch current `read_by` array, append, and update (atomic update would be via RPC, but let's keep it simple here)
+        const { data } = await supabase.from('notifications').select('read_by').eq('id', notificationId).single();
+        if (data && !data.read_by?.includes(studentId)) {
+            await supabase.from('notifications').update({
+                read_by: [...(data.read_by || []), studentId]
+            }).eq('id', notificationId);
+        }
+    },
+
+    markAllNotificationsAsRead: async (studentId: string, unreadIds: string[]) => {
+        // Instead of fetching all, we just update the specific IDs from the frontend
+        for (const nid of unreadIds) {
+            await syncService.markNotificationAsRead(nid, studentId);
+        }
+    },
+
+    syncRemoveNotificationByRef: async (refId: string) => {
+        await supabase.from('notifications').delete().eq('ref_id', refId);
     },
 
     // Busca inicial dos dados do App Load
@@ -184,12 +220,11 @@ export const syncService = {
                 console.log('Students synced');
             }
 
-            // Sync other tables
             const { data: contentData } = await supabase.from('planning_content').select('*');
             if (contentData) {
                 const CONTENT_KEY = 'biograde_content_2026_v2';
                 const localContent = contentData.map(c => ({
-                    schoolClass: c.school_class,
+                    schoolClass: c.class_level,
                     bimester: c.bimester,
                     week: c.week,
                     title: c.title,
@@ -236,6 +271,25 @@ export const syncService = {
                     };
                 });
                 localStorage.setItem(FORUM_POSTS_KEY, JSON.stringify(posts));
+            }
+
+            const { data: notifData } = await supabase.from('notifications').select('*');
+            if (notifData) {
+                const NOTIFICATIONS_KEY = 'biograde_notifications_2026_v2';
+                const notifs = notifData.map(n => ({
+                    id: n.id,
+                    type: n.type,
+                    targetType: n.target_type,
+                    targetId: n.target_id,
+                    message: n.message,
+                    targetSection: n.target_section,
+                    refId: n.ref_id,
+                    createdAt: n.created_at,
+                    readBy: n.read_by || []
+                }));
+                // Sort by newest first
+                notifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifs));
             }
 
             console.log('Supabase Sync complete!');
